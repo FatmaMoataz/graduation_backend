@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export let roleEnum = ['admin','user'];
+export const roleEnum = {'admin':'admin','user':'user'};
 
 const userSchema = new mongoose.Schema({
     username:{
@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true,
     },
-    enum:{
+    role:{
         type:String,
         required:true,
         enum:roleEnum,
