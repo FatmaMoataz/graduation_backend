@@ -4,6 +4,7 @@ import userRoutes from './modules/user/user.routes.js';
 import authRoutes from './modules/auth/auth.routes.js';
 import companyRoutes from './modules/company/company.routes.js';
 import communityRoutes from './modules/community/community.routes.js';
+import postRoutes from './modules/post/post.routes.js';
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/invitations', invitationRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/communities', communityRoutes);
+app.use('/api/posts', postRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

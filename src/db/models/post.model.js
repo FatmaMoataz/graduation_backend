@@ -10,6 +10,18 @@ const post = new mongoose.Schema({
     is_pinned:{
         type:Boolean,
         default:false,
+    },
+    communityId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Community'
+    },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    pollId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Poll'
     }
 },{
     timestamps:true,
