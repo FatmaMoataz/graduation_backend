@@ -6,6 +6,7 @@ import companyRoutes from './modules/company/company.routes.js';
 import communityRoutes from './modules/community/community.routes.js';
 import postRoutes from './modules/post/post.routes.js';
 import pollRoutes from './modules/poll/poll.routes.js';
+import notificationRoutes from './modules/notifications/notification.routes.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/communities', communityRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/polls', pollRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
