@@ -7,7 +7,8 @@ import { validate } from "../../middlewares/validation.middleware.js";
 import {
   createPostSchema,
   updatePostSchema,
-  idParamSchema
+  idParamSchema,
+  commentSchema
 } from "../../validators/post.validation.js";
 
 const router = Router();
@@ -40,6 +41,25 @@ router.delete(
   "/:id",
   validate(idParamSchema, "params"),
   postController.deletePost
+);
+
+router.post(
+  "/:id/like",
+  validate(idParamSchema, "params"),
+  postController.likePost
+);
+
+router.delete(
+  "/:id/like",
+  validate(idParamSchema, "params"),
+  postController.unlikePost
+);
+
+router.post(
+  "/:id/comment",
+  validate(idParamSchema, "params"),
+  validate(commentSchema),
+  postController.addComment
 );
 
 export default router;
