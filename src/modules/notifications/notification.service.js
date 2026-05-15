@@ -4,6 +4,8 @@ import Notification from "../../db/models/notification.model.js";
 export const createNotificationService = async (data) => {
   const notification = await Notification.create(data);
 
+  await notification.populate("userId fromUserId");
+
   return {
     success: true,
     message: "Notification created successfully",
@@ -15,7 +17,8 @@ export const createNotificationService = async (data) => {
 export const getUserNotificationsService = async (userId) => {
   const notifications = await Notification.find({ userId })
     .sort({ createdAt: -1 })
-    .populate("userId fromUserId");
+    .populate("userId", "username email")
+    .populate("fromUserId", "username email");
 
   return {
     success: true,
@@ -25,13 +28,22 @@ export const getUserNotificationsService = async (userId) => {
 };
 
 // MARK AS READ
-export const markAsReadService = async (id) => {
+export const markAsReadService = async (id, userId) => {
   const notification = await Notification.findById(id);
 
   if (!notification) {
     return {
       success: false,
+      status: 404,
       message: "Notification not found",
+    };
+  }
+
+  if (notification.userId.toString() !== userId.toString()) {
+    return {
+      success: false,
+      status: 403,
+      message: "Unauthorized to mark this notification as read",
     };
   }
 
@@ -48,15 +60,26 @@ export const markAsReadService = async (id) => {
 };
 
 // DELETE NOTIFICATION
-export const deleteNotificationService = async (id) => {
-  const notification = await Notification.findByIdAndDelete(id);
+export const deleteNotificationService = async (id, userId) => {
+  const notification = await Notification.findById(id);
 
   if (!notification) {
     return {
       success: false,
+      status: 404,
       message: "Notification not found",
     };
   }
+
+  if (notification.userId.toString() !== userId.toString()) {
+    return {
+      success: false,
+      status: 403,
+      message: "Unauthorized to delete this notification",
+    };
+  }
+
+  await Notification.findByIdAndDelete(id);
 
   return {
     success: true,

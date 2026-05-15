@@ -19,10 +19,15 @@ const invitationSchema = new mongoose.Schema({
         required: true,
         match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address']
     },
+    sentBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
     expiresAt: {
         type: Date,
         default: () => Date.now() + 24 * 60 * 60 * 1000
-}
+    }
     
 },{
     timestamps:true,

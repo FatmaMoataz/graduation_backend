@@ -1,5 +1,6 @@
 import { Router } from "express";
 import * as pollController from "./poll.controller.js";
+import { authenticate } from "../../middlewares/auth.middleware.js";
 import { validate } from "../../middlewares/validation.middleware.js";
 
 import {
@@ -12,6 +13,7 @@ const router = Router();
 // create poll
 router.post(
   "/",
+  authenticate,
   validate(createPollSchema),
   pollController.createPoll
 );
@@ -22,6 +24,7 @@ router.get("/", pollController.getAllPolls);
 // vote
 router.post(
   "/vote",
+  authenticate,
   validate(votePollSchema),
   pollController.votePoll
 );

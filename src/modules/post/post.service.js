@@ -126,7 +126,9 @@ export const likePostService = async (postId, userId) => {
     };
   }
 
-  const alreadyLiked = post.likes.includes(userId);
+  const alreadyLiked = post.likes.some(
+    (id) => id.toString() === userId.toString()
+  );
 
   if (alreadyLiked) {
     return {
@@ -135,9 +137,9 @@ export const likePostService = async (postId, userId) => {
     };
   }
 
-  post.likes.push(userId);
-
-  await post.save();
+  await Post.findByIdAndUpdate(postId, {
+    $addToSet: { likes: userId }
+  });
 
   return {
     success: true,
@@ -155,11 +157,9 @@ export const unlikePostService = async (postId, userId) => {
     };
   }
 
-  post.likes = post.likes.filter(
-    (id) => id.toString() !== userId.toString()
-  );
-
-  await post.save();
+  await Post.findByIdAndUpdate(postId, {
+    $pull: { likes: userId }
+  });
 
   return {
     success: true,
@@ -187,9 +187,9 @@ export const addCommentService = async (
     postId
   });
 
-  post.comments.push(comment._id);
-
-  await post.save();
+  await Post.findByIdAndUpdate(postId, {
+    $push: { comments: comment._id }
+  });
 
   return {
     success: true,

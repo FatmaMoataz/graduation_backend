@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import * as postController from "./post.controller.js";
 
+import { authenticate } from "../../middlewares/auth.middleware.js";
 import { validate } from "../../middlewares/validation.middleware.js";
 
 import {
@@ -15,6 +16,7 @@ const router = Router();
 
 router.post(
   "/",
+  authenticate,
   validate(createPostSchema),
   postController.createPost
 );
@@ -32,6 +34,7 @@ router.get(
 
 router.put(
   "/:id",
+  authenticate,
   validate(idParamSchema, "params"),
   validate(updatePostSchema),
   postController.updatePost
@@ -39,24 +42,28 @@ router.put(
 
 router.delete(
   "/:id",
+  authenticate,
   validate(idParamSchema, "params"),
   postController.deletePost
 );
 
 router.post(
   "/:id/like",
+  authenticate,
   validate(idParamSchema, "params"),
   postController.likePost
 );
 
 router.delete(
   "/:id/like",
+  authenticate,
   validate(idParamSchema, "params"),
   postController.unlikePost
 );
 
 router.post(
   "/:id/comment",
+  authenticate,
   validate(idParamSchema, "params"),
   validate(commentSchema),
   postController.addComment

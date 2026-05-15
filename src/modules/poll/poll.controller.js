@@ -3,8 +3,12 @@ import * as pollService from "./poll.service.js";
 // CREATE
 export const createPoll = async (req, res, next) => {
   try {
-    const result = await pollService.createPollService(req.body);
-    res.status(201).json(result);
+    const result = await pollService.createPollService({
+      ...req.body,
+      userId: req.userId
+    });
+
+    return res.status(201).json(result);
   } catch (err) {
     next(err);
   }
@@ -14,7 +18,7 @@ export const createPoll = async (req, res, next) => {
 export const getAllPolls = async (req, res, next) => {
   try {
     const result = await pollService.getAllPollsService();
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (err) {
     next(err);
   }
@@ -23,8 +27,12 @@ export const getAllPolls = async (req, res, next) => {
 // VOTE
 export const votePoll = async (req, res, next) => {
   try {
-    const result = await pollService.votePollService(req.body);
-    res.status(201).json(result);
+    const result = await pollService.votePollService({
+      ...req.body,
+      userId: req.userId
+    });
+
+    return res.status(201).json(result);
   } catch (err) {
     next(err);
   }
@@ -34,7 +42,7 @@ export const votePoll = async (req, res, next) => {
 export const getResults = async (req, res, next) => {
   try {
     const result = await pollService.getPollResultsService(req.params.id);
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (err) {
     next(err);
   }

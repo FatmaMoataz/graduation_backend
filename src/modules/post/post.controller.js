@@ -4,7 +4,7 @@ export const createPost = async (req, res, next) => {
   try {
     const result = await postService.createPostService({
       ...req.body,
-      userId: req.user._id
+      userId: req.userId
     });
 
     return res.status(201).json(result);
@@ -44,7 +44,7 @@ export const updatePost = async (req, res, next) => {
     const result = await postService.updatePostService(
       req.params.id,
       req.body,
-      req.user._id
+      req.userId
     );
 
     if (!result.success) {
@@ -61,7 +61,7 @@ export const deletePost = async (req, res, next) => {
   try {
     const result = await postService.deletePostService(
       req.params.id,
-      req.user._id
+      req.userId
     );
 
     if (!result.success) {
@@ -78,7 +78,7 @@ export const likePost = async (req, res, next) => {
   try {
     const result = await postService.likePostService(
       req.params.id,
-      req.user._id
+      req.userId
     );
 
     return res.status(200).json(result);
@@ -91,7 +91,7 @@ export const unlikePost = async (req, res, next) => {
   try {
     const result = await postService.unlikePostService(
       req.params.id,
-      req.user._id
+      req.userId
     );
 
     return res.status(200).json(result);
@@ -104,7 +104,7 @@ export const addComment = async (req, res, next) => {
   try {
     const result = await postService.addCommentService(
       req.params.id,
-      req.user._id,
+      req.userId,
       req.body.content
     );
 

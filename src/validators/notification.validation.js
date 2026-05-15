@@ -21,8 +21,6 @@ export const createNotificationSchema = Joi.object({
 
   userId: objectId.required(),
 
-  fromUserId: objectId.optional(),
-
   referenceId: objectId.optional(),
 
   referenceModel: Joi.string().valid("Task", "Post", "Poll").optional(),

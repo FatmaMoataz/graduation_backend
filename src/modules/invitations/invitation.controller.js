@@ -1,26 +1,31 @@
 import * as invitationService from '../invitations/invitation.service.js';
 import { invitationStatusEnum } from '../../db/models/invitation.model.js';
 
-export const createInvitation = async(req,res) => { 
-try {
-   const existing = await invitationService.getPendingInvitationByEmailService(req.body.emailInvited);
-if(existing) {
-  return res.status(400).json({ success: false, message: 'an active invitation already exists for this email' });
-}
+export const createInvitation = async (req, res, next) => {
+  try {
+    const existing = await invitationService.getPendingInvitationByEmailService(req.body.emailInvited);
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: 'An active invitation already exists for this email'
+      });
+    }
 
-   const token = invitationService.generateInvitationToken();
-   const invitation = await invitationService.createInvitationService({
+    const token = invitationService.generateInvitationToken();
+    const result = await invitationService.createInvitationService({
       emailInvited: req.body.emailInvited,
       token,
-      status: invitationStatusEnum.pending
-   });
-   res.status(201).json({ success: true, data: invitation });
-} catch (error) {
-   res.status(400).json({ success: false, message: error.message });
-}
+      status: invitationStatusEnum.pending,
+      sentBy: req.userId
+    });
+
+    return res.status(201).json(result);
+  } catch (error) {
+    next(error);
+  }
 }
 
-export const handleInvitationResponse = async (req, res) => {
+export const handleInvitationResponse = async (req, res, next) => {
   try {
     const token = req.params.token;
 
@@ -28,144 +33,105 @@ export const handleInvitationResponse = async (req, res) => {
       ? invitationStatusEnum.accepted
       : invitationStatusEnum.rejected;
 
-    const invitation = await invitationService.getInvitationByTokenService(token);
+    const result = await invitationService.handleInvitationResponseService(token, status);
 
-    if (!invitation) {
-      return res.status(404).json({
-        success: false,
-        message: "invalid invitation token"
-      });
+    if (!result.success) {
+      return res.status(result.status || 400).json(result);
     }
 
-    if (invitation.expiresAt < Date.now()) {
-      return res.status(400).json({
-        success: false,
-        message: "invitation expired"
-      });
-    }
-
-    if (invitation.status !== invitationStatusEnum.pending) {
-      return res.status(400).json({
-        success: false,
-        message: "already used"
-      });
-    }
-
-    const updated = await invitationService.updateInvitationService(
-      invitation._id,
-      { status }
-    );
-
-    return res.status(200).json({
-      success: true,
-      message: `invitation ${status}`,
-      data: updated
-    });
-
+    return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message
-    });
+    next(error);
   }
-};
-
-export const getAllInvitations = async(req,res) => { 
- try {
-    const invitations = await invitationService.getAllInvitationsService();
-    res.status(200).json({ success: true, data: invitations });
- } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
- }
 }
 
-export const getInvitationById = async(req,res) => { 
- try {
-    const invitation = await invitationService.getInvitationByIdService(req.params.id);
-    if(!invitation) {
-        return res.status(404).json({ success: false, message: 'invitation not found' });
-    }
-    return res.status(200).json({ success: true, data: invitation });
- } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
- }
-}
-
-export const getInvitationByToken = async(req,res) => { 
- try {
-    const invitation = await invitationService.getInvitationByTokenService(req.params.token);
-    if(!invitation) {
-        return res.status(404).json({ success: false, message: 'invalid invitation token' });
-    }
-    if(invitation.status !== invitationStatusEnum.pending) {
-        return res.status(400).json({ success: false, message: 'invitation is not pending' });
-    }
-    res.status(200).json({ success: true, data: invitation });
- } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
- }
-}
-
-export const updateInvitation = async (req, res) => {
+export const getAllInvitations = async (req, res, next) => {
   try {
-    // if (!req.body || Object.keys(req.body).length === 0) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: 'no data provided to update'
-    //   });
-    // }
+    const result = await invitationService.getAllInvitationsService();
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
 
-    const existingInvitation = await invitationService.getInvitationByIdService(req.params.id);
+export const getInvitationById = async (req, res, next) => {
+  try {
+    const result = await invitationService.getInvitationByIdService(req.params.id);
 
-    if (!existingInvitation) {
+    if (!result) {
       return res.status(404).json({
         success: false,
-        message: 'invitation not found'
+        message: 'Invitation not found'
       });
     }
-
-    if (existingInvitation.status !== invitationStatusEnum.pending) {
-      return res.status(400).json({
-        success: false,
-        message: 'cannot update invitation after it is used'
-      });
-    }
-
-    if (
-      req.body.status &&
-      !Object.values(invitationStatusEnum).includes(req.body.status)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: 'invalid status value'
-      });
-    }
-
-    const updatedInvitation = await invitationService.updateInvitationService(
-      req.params.id,
-      {
-        emailInvited: req.body.emailInvited,
-      }
-    );
 
     return res.status(200).json({
       success: true,
-      data: updatedInvitation
+      data: result
     });
-
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    next(error);
   }
-};
+}
 
-export const deleteInvitation = async(req,res) => { 
- try {
-    const invitation = await invitationService.deleteInvitationService(req.params.id);
-    if(!invitation) {
-        return res.status(404).json({ success: false, message: 'invitation not found' });
+export const getInvitationByToken = async (req, res, next) => {
+  try {
+    const result = await invitationService.getInvitationByTokenService(req.params.token);
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: 'Invalid invitation token'
+      });
     }
-    return res.status(200).json({ success: true, message: 'invitation deleted successfully' });
- } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
- }
+
+    if (result.status !== invitationStatusEnum.pending) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invitation is not pending'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const updateInvitation = async (req, res, next) => {
+  try {
+    const result = await invitationService.updateInvitationService(
+      req.params.id,
+      req.body,
+      req.userId
+    );
+
+    if (!result.success) {
+      return res.status(result.status || 400).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const deleteInvitation = async (req, res, next) => {
+  try {
+    const result = await invitationService.deleteInvitationService(
+      req.params.id,
+      req.userId
+    );
+
+    if (!result.success) {
+      return res.status(result.status || 400).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
 }

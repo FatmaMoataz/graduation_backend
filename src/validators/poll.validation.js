@@ -11,7 +11,6 @@ export const createPollSchema = Joi.object({
 
   communityId: objectId.optional(),
   postId: objectId.optional(),
-  userId: objectId.optional(),
 
   options: Joi.array()
     .items(
@@ -27,5 +26,4 @@ export const createPollSchema = Joi.object({
 export const votePollSchema = Joi.object({
   pollId: objectId.required(),
   optionText: Joi.string().required(),
-  userId: objectId.required(),
 });
